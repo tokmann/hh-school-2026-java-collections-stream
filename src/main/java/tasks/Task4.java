@@ -21,7 +21,14 @@ public class Task4 {
     this.personConverter = personConverter;
   }
 
+  /*
+  Здесь просто использовал map в стриме чтобы получать из одного объекта какой то другой. Написал ссылку на метод вместо
+  лямбды. Защиту от null никакую тут уже не сделать, я не создавал convert(), но и не надо ее тут, если маппинг хорошо
+  сделан.
+   */
   public List<ApiPersonDto> convert(List<Person> persons) {
-    return new ArrayList<>();
+    return persons.stream()
+        .map(personConverter::convert)
+        .toList();
   }
 }

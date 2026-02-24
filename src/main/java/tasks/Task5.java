@@ -22,7 +22,12 @@ public class Task5 {
     this.personConverter = personConverter;
   }
 
+  /*
+  Тут тоже работа с map в стриме но теперь уже передается лямбда и вызывается перегрузка convert.
+   */
   public List<ApiPersonDto> convert(List<Person> persons, Map<Integer, Integer> personAreaIds) {
-    return new ArrayList<>();
+    return persons.stream()
+        .map(person -> personConverter.convert(person, personAreaIds.get(person.id())))
+        .toList();
   }
 }
