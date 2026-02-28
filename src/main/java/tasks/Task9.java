@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -52,10 +54,10 @@ public class Task9 {
   конкатенации строк я сделал String.join и еще с проверкой на null, я думаю так локаничнее, удобнее и читабельнее
    */
   public String convertPersonToString(Person person) {
-    return String.join("",
-        person.secondName() == null ? "" : person.secondName(),
-        person.firstName() == null ? "" : person.firstName(),
-        person.middleName() == null ? "" : person.middleName());
+    return Stream.of(person.secondName(), person.firstName(), person.middleName())
+        .filter(Objects::nonNull)
+        .filter(s -> !s.isEmpty())
+        .collect(Collectors.joining(" "));
   }
 
   // словарь id персоны -> ее имя (ПОПРАВЛЕНО)
@@ -65,11 +67,12 @@ public class Task9 {
   computeIfAbsent(), тогда не надо будет отдельно проверять наличие ключа в мапе.
    */
   public Map<Integer, String> getPersonNames(Collection<Person> persons) {
-    Map<Integer, String> map = new HashMap<>(persons.size());
-    for (Person person : persons) {
-      map.computeIfAbsent(person.id(), id -> convertPersonToString(person));
-    }
-    return map;
+    return persons.stream()
+        .collect(Collectors.toMap(
+            Person::id,
+            this::convertPersonToString,
+            (exist, replace) -> exist
+        ));
   }
 
   // есть ли совпадающие в двух коллекциях персоны? (ПОПРАВЛЕНО)

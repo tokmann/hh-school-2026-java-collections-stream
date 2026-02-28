@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /*
 Имеются
@@ -28,18 +30,18 @@ public class Task6 {
   public static Set<String> getPersonDescriptions(Collection<Person> persons,
                                                   Map<Integer, Set<Integer>> personAreaIds,
                                                   Collection<Area> areas) {
-    Map<Integer, Area> idAndArea = new HashMap<>();
-    for (Area area : areas) {
-      idAndArea.put(area.getId(), area);
-    }
+    Map<Integer, Area> idAreaMap = areas.stream()
+        .collect(Collectors.toMap(
+           Area::getId,
+           Function.identity(),
+            (exist, replace) -> exist
+        ));
 
-    Set<String> result = new HashSet<>();
-    for (Person person : persons) {
-      Set<Integer> regions = personAreaIds.get(person.id());
-      for (int regionId : regions) {
-        result.add(person.firstName() + " - " + idAndArea.get(regionId).getName());
-      }
-    }
-    return result;
+    return persons.stream()
+        .flatMap(person ->
+          personAreaIds.getOrDefault(person.id(), Set.of()).stream()
+                .map(regionId -> person.firstName() + " - " + idAreaMap.get(regionId).getName())
+        )
+        .collect(Collectors.toSet());
   }
 }

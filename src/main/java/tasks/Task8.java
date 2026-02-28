@@ -34,17 +34,22 @@ public class Task8 {
   Итоговая сложность будет O(n + m), линейная, я думаю самый быстрый вариант.
    */
   public Set<PersonWithResumes> enrichPersonsWithResumes(Collection<Person> persons) {
-    HashMap<Integer, PersonWithResumes> idAndPersonWithResumes = new HashMap<>();
-    for (Person person : persons) {
-      idAndPersonWithResumes.put(person.id(), new PersonWithResumes(person, new HashSet<>()));
-    }
 
-    Set<Resume> resumes = personService.findResumes(idAndPersonWithResumes.keySet());
+    Set<Resume> resumes = personService.findResumes(persons.stream()
+        .map(Person::id)
+        .collect(Collectors.toSet())
+    );
 
-    for (Resume resume : resumes) {
-      idAndPersonWithResumes.get(resume.personId()).resumes().add(resume);
-    }
+    Map<Integer, Set<Resume>> personIdResumesMap = resumes.stream()
+        .collect(Collectors.groupingBy(
+            Resume::personId,
+            Collectors.toSet()
+        ));
 
-    return new HashSet<>(idAndPersonWithResumes.values());
+    return persons.stream()
+        .map(person ->
+            new PersonWithResumes(person, personIdResumesMap.getOrDefault(person.id(), Set.of()))
+        )
+        .collect(Collectors.toSet());
   }
 }
