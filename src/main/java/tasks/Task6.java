@@ -3,9 +3,13 @@ package tasks;
 import common.Area;
 import common.Person;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /*
 Имеются
@@ -16,9 +20,28 @@ import java.util.Set;
  */
 public class Task6 {
 
+  /*
+  Здесь все решается мапой так как нужно отношение id (айдишник региона) to Area. Она создается за O(m) m - это кол-во
+  регионов, затем в цикле проходимся по персонам, это еще O(n), n - кол-во персон, и для каждой проходимся по сету за
+  O(k), k - это кол-во регионов у персоны, и с помощью мапы находим название регионов и добавляем строчки в ответ.
+  Тут я решил не использовать никакой sb, так как для трех строк это ничего не ускорит. Получается ассимптотика
+  O(m + n * k), я думаю самый быстрый вариант
+   */
   public static Set<String> getPersonDescriptions(Collection<Person> persons,
                                                   Map<Integer, Set<Integer>> personAreaIds,
                                                   Collection<Area> areas) {
-    return new HashSet<>();
+    Map<Integer, Area> idAreaMap = areas.stream()
+        .collect(Collectors.toMap(
+           Area::getId,
+           Function.identity(),
+            (exist, replace) -> exist
+        ));
+
+    return persons.stream()
+        .flatMap(person ->
+          personAreaIds.getOrDefault(person.id(), Set.of()).stream()
+                .map(regionId -> person.firstName() + " - " + idAreaMap.get(regionId).getName())
+        )
+        .collect(Collectors.toSet());
   }
 }
